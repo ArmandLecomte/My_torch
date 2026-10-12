@@ -1,4 +1,15 @@
 import argparse
+import sys
+from argparse import ArgumentParser, Namespace
+
+
+def execute_train(args: Namespace) -> int:
+    return 0
+
+
+def execute_predict(args: Namespace) -> int:
+    return 0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -24,3 +35,7 @@ if __name__ == "__main__":
     desc.add_argument("LOADFILE", help="File containing an artificial neural network")
     desc.add_argument("CHESSFILE", help="File containing chessboards")
     args = parser.parse_args()
+
+    if args.train:
+        sys.exit(execute_train(args))
+    sys.exit(execute_predict(args))
