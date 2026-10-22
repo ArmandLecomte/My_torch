@@ -1,3 +1,0 @@
-def simple_add(a: int, b: int) -> int:
-    """Add two integers."""
-    ...
