@@ -7,6 +7,5 @@ name = "my_torch"
 version = "0.1.0"
 description = "A simple PyTorch-like library"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-py-modules = ["my_torch"]
+[tool.setuptools.packages.find]
+where = ["src"]
