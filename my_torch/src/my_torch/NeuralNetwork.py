@@ -26,10 +26,12 @@ class LayersDefinition:
 class NeuralNetwork:
     """A simple neural network class."""
 
-    def __init__(self, layers_definition: LayersDefinition):
+    def __init__(self, layers_definition: LayersDefinition,
+                 activation_function: mtt.activation_function = sigmoid):
         self._layers_definition = layers_definition
         self._layers : list[mtt.hidden_layer] = self._init_layers()
         self._biases : mtt.biases = self._init_biases()
+        self._activation_function = activation_function
 
     def _create_layer_weights(self, in_features: int,
                               out_features: int) -> mtt.hidden_layer:
@@ -64,7 +66,7 @@ class NeuralNetwork:
         for i in range(len(self._layers)):
             layer_result = layer_output.dot(self._layers[i])
             biased_result = layer_result + self._biases[i]
-            neurons_output = sigmoid(biased_result)
+            neurons_output = self._activation_function(biased_result)
             layer_output = neurons_output
         return layer_output
 
