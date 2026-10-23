@@ -14,4 +14,4 @@ type biases = list[np.ndarray[_1d, np.dtype[bias]]]
 type bias_function = Callable[[],float]
 type weight_function = Callable[[],float]
 
-type activation_function = Callable[[weight], weight]
+type activation_function = Callable[[hidden_layer], hidden_layer]

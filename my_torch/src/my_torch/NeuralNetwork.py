@@ -62,13 +62,16 @@ class NeuralNetwork:
         if input_layer.size != self._layers_definition.input_size:
             raise ValueError("Input layer size does not match the defined input size.")
 
-        layer_output = input_layer
+        layer_output: mtt.hidden_layer = input_layer
         for i in range(len(self._layers)):
-            layer_result = layer_output.dot(self._layers[i])
-            biased_result = layer_result + self._biases[i]
-            neurons_output = self._activation_function(biased_result)
-            layer_output = neurons_output
+            layer_output = self.apply_layer(i, layer_output)
         return layer_output
+
+    def apply_layer(self, i: int, prev_output: mtt.hidden_layer) -> mtt.hidden_layer:
+        layer_result = prev_output.dot(self._layers[i])
+        biased_result = layer_result + self._biases[i]
+        neurons_output = self._activation_function(biased_result)
+        return neurons_output
 
     @property
     def layers(self):

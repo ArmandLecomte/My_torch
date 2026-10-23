@@ -19,4 +19,4 @@ if __name__ == "__main__":
        1, 0, 0, 0, 0, 1,
        1, 0, 0, 0, 0, 1]).reshape(1, 30))
 
-    print(out, out.shape)
+    print(out)
