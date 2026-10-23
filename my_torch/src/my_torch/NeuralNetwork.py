@@ -29,12 +29,12 @@ class NeuralNetwork:
     def __init__(self, layers_definition: LayersDefinition,
                  activation_function: mtt.activation_function = sigmoid):
         self._layers_definition = layers_definition
-        self._layers : list[mtt.hidden_layer] = self._init_layers()
+        self._layers : list[mtt.layer] = self._init_layers()
         self._biases : mtt.biases = self._init_biases()
         self._activation_function = activation_function
 
     def _create_layer_weights(self, in_features: int,
-                              out_features: int) -> mtt.hidden_layer:
+                              out_features: int) -> mtt.layer:
         """Create a weight matrix layer initialized using the default value generator."""
         total_elements = out_features * in_features
         weights = np.fromiter(
@@ -45,9 +45,9 @@ class NeuralNetwork:
         )
         return weights.reshape(in_features, out_features)
 
-    def _init_layers(self) -> list[mtt.hidden_layer]:
+    def _init_layers(self) -> list[mtt.layer]:
         """Initialize all hidden layers according to the layer definition."""
-        layers: list[mtt.hidden_layer] = []
+        layers: list[mtt.layer] = []
         prev_size = self._layers_definition.input_size
 
         for layer_size in self._layers_definition.hidden_layers:
@@ -58,16 +58,16 @@ class NeuralNetwork:
         layers.append(self._create_layer_weights(in_features=prev_size, out_features=self._layers_definition.output_size))
         return layers
 
-    def forward(self, input_layer: mtt.input_layer):
+    def forward(self, input_layer: mtt.layer):
         if input_layer.size != self._layers_definition.input_size:
             raise ValueError("Input layer size does not match the defined input size.")
 
-        layer_output: mtt.hidden_layer = input_layer
+        layer_output: mtt.layer = input_layer
         for i in range(len(self._layers)):
             layer_output = self.apply_layer(i, layer_output)
         return layer_output
 
-    def apply_layer(self, i: int, prev_output: mtt.hidden_layer) -> mtt.hidden_layer:
+    def apply_layer(self, i: int, prev_output: mtt.layer) -> mtt.layer:
         layer_result = prev_output.dot(self._layers[i])
         biased_result = layer_result + self._biases[i]
         neurons_output = self._activation_function(biased_result)
