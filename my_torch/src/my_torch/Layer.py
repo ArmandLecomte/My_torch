@@ -1,6 +1,7 @@
 import numpy as np
 
-from my_torch import typing as mtt, LayerSettings
+from . import typing as mtt
+from .NNSettings import LayerSettings
 
 __all__ = ["Layer"]
 

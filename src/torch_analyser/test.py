@@ -1,7 +1,7 @@
 import numpy as np
+from matplotlib import pyplot as plt
 
-from my_torch import NeuralNetwork, LayerSettings, sigmoid, sigmoid_derivative, \
-    NNSettings, mse_loss, mse_derivative
+from my_torch import NeuralNetwork, LayerSettings, sigmoid, sigmoid_derivative, NNSettings, mse_loss, mse_derivative
 
 layersSettings = [
     LayerSettings(
@@ -28,26 +28,74 @@ settings = NNSettings(
 )
 nn = NeuralNetwork(settings)
 
+# A
+a =[0, 0, 1, 1, 0, 0,
+   0, 1, 0, 0, 1, 0,
+   1, 1, 1, 1, 1, 1,
+   1, 0, 0, 0, 0, 1,
+   1, 0, 0, 0, 0, 1]
+# B
+b =[0, 1, 1, 1, 1, 0,
+   0, 1, 0, 0, 1, 0,
+   0, 1, 1, 1, 1, 0,
+   0, 1, 0, 0, 1, 0,
+   0, 1, 1, 1, 1, 0]
+# C
+c =[0, 1, 1, 1, 1, 0,
+   0, 1, 0, 0, 0, 0,
+   0, 1, 0, 0, 0, 0,
+   0, 1, 0, 0, 0, 0,
+   0, 1, 1, 1, 1, 0]
+
+# Creating labels
+y =[[1, 0, 0],
+   [0, 1, 0],
+   [0, 0, 1]]
+
+x =[np.array(a).reshape(1, 30), np.array(b).reshape(1, 30),
+                                np.array(c).reshape(1, 30)]
+y = np.array(y)
 
 if __name__ == "__main__":
-    out = nn.forward(np.array([0, 0, 1, 1, 0, 0,
-       0, 1, 0, 0, 1, 0,
-       1, 1, 1, 1, 1, 1,
-       1, 0, 0, 0, 0, 1,
-       1, 0, 0, 0, 0, 1]).reshape(1, 30))
+    data = [
+        (x[0], y[0]),
+        (x[1], y[1]),
+        (x[2], y[2])
+    ]
 
-    num_epochs = 1000
-    for epoch in range(num_epochs):
-        epoch_losses = []
+    acc, loss = nn.train(data, num_epoch=1000, learning_rate=0.01)
 
-        for x_sample, y_sample in zip(x_train, y_train):
-            # back_propagation updates weights and returns the loss for this step
-            loss = nn.back_propagation(x_sample, y_sample, learning_rate=0.01)
-            epoch_losses.append(loss)
+    plt.plot(acc)
+    plt.ylabel('Accuracy')
+    plt.xlabel("Epochs:")
+    plt.show()
 
-        avg_epoch_loss = np.mean(epoch_losses)
-        print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {avg_epoch_loss:.6f}")
+    # plotting Loss
+    plt.plot(loss)
+    plt.ylabel('Loss')
+    plt.xlabel("Epochs:")
+    plt.show()
 
-    # Accessing the loss history stored inside the network instance:
-    print(f"Final loss recorded in network: {nn.last_loss}")
-    print(out)
+
+    def predict(x):
+        Out = nn.forward(x)
+        maxm = 0
+        k = 0
+        for i in range(len(Out[0])):
+            if (maxm < Out[0][i]):
+                maxm = Out[0][i]
+                k = i
+        if k == 0:
+            print("Image is of letter A.")
+        elif k == 1:
+            print("Image is of letter B.")
+        else:
+            print("Image is of letter C.")
+        plt.imshow(x.reshape(5, 6))
+        plt.show()
+
+
+    # Example: Predicting for letter 'B'
+    for i in range(3):
+        predict(x[i])
+    print()

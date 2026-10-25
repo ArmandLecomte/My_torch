@@ -4,7 +4,7 @@ from . import Layer, NNSettings, NeuralNetwork, typing
 from .Layer import Layer
 from .NNSettings import LayerSettings, NNSettings
 from .NeuralNetwork import NeuralNetwork
-from .builtin_functions import *
+from .builtin_functions import sigmoid, sigmoid_derivative, mse_loss, mse_derivative
 
 _modules = [NeuralNetwork, NNSettings, Layer, builtin_functions]
 

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from my_torch import typing as mtt, mse_loss, mse_derivative
+from . import typing as mtt
+from .builtin_functions import mse_loss, mse_derivative
 
 __all__ = ["LayerSettings", "NNSettings"]
 

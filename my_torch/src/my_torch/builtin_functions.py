@@ -1,5 +1,5 @@
 import numpy as np
-from my_torch import typing as mtt
+from . import typing as mtt
 
 __all__ = ["sigmoid", "sigmoid_derivative", "mse_loss", "mse_derivative",
            "heaviside"]
