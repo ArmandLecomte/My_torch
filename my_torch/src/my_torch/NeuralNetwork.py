@@ -1,95 +1,80 @@
-"""A simple library like PyTorch."""
-from dataclasses import dataclass
+from my_torch import typing as mtt, Layer, NNSettings
 
-import numpy as np
-from my_torch import typing as mtt
+__all__ = ["NeuralNetwork"]
 
-__all__ = ["sigmoid", "heaviside", "NeuralNetwork", "LayersDefinition"]
-
-def sigmoid(x):
-    """Compute the sigmoid activation function."""
-    return 1 / (1 + np.exp(-x))
-
-def heaviside(x):
-    """Compute the Heaviside step function."""
-    return np.heaviside(x, 1)
-
-
-@dataclass
-class LayersDefinition:
-    input_size: int
-    hidden_layers: list[int]
-    output_size: int
-    default_weight: mtt.weight_function
-    default_bias: mtt.bias_function
 
 class NeuralNetwork:
     """A simple neural network class."""
 
-    def __init__(self, layers_definition: LayersDefinition,
-                 activation_function: mtt.activation_function = sigmoid):
-        self._layers_definition = layers_definition
-        self._layers : list[mtt.layer] = self._init_layers()
-        self._biases : mtt.biases = self._init_biases()
-        self._activation_function = activation_function
+    def __init__(self, settings: NNSettings):
+        self._settings: NNSettings = settings
+        self._layers: list[Layer] = self._init_layers()
+        self.last_loss: float | None = None
+        self.loss_history: list[float] = []
 
-    def _create_layer_weights(self, in_features: int,
-                              out_features: int) -> mtt.layer:
-        """Create a weight matrix layer initialized using the default value generator."""
-        total_elements = out_features * in_features
-        weights = np.fromiter(
-            (self._layers_definition.default_weight() for _ in
-             range(total_elements)),
-            dtype=np.float64,
-            count=total_elements,
-        )
-        return weights.reshape(in_features, out_features)
-
-    def _init_layers(self) -> list[mtt.layer]:
+    def _init_layers(self) -> list[Layer]:
         """Initialize all hidden layers according to the layer definition."""
-        layers: list[mtt.layer] = []
-        prev_size = self._layers_definition.input_size
+        layers: list[Layer] = []
+        prev_size = self._settings.input_count
 
-        for layer_size in self._layers_definition.hidden_layers:
-            layer = self._create_layer_weights(in_features=prev_size, out_features=layer_size)
-            layers.append(layer)
-            prev_size = layer_size
+        for layer_setting in self._settings.hidden_layers:
+            layers.append(Layer(prev_size, layer_setting))
+            prev_size = layer_setting.neurons
 
-        layers.append(self._create_layer_weights(in_features=prev_size, out_features=self._layers_definition.output_size))
+        layers.append(Layer(prev_size, self._settings.output_layer))
         return layers
 
-    def forward(self, input_layer: mtt.layer):
-        if input_layer.size != self._layers_definition.input_size:
-            raise ValueError("Input layer size does not match the defined input size.")
+    def _keep_all_forward(self, input_layer: mtt.layer) -> list[mtt.layer]:
+        if input_layer.size != self._settings.input_count:
+            raise ValueError(
+                "Input layer size does not match the defined input size.")
 
-        layer_output: mtt.layer = input_layer
-        for i in range(len(self._layers)):
-            layer_output = self.apply_layer(i, layer_output)
-        return layer_output
+        activations: list[mtt.layer] = [input_layer]
+        for layer in self._layers:
+            activations.append(layer.apply(activations[-1]))
+        return activations
 
-    def apply_layer(self, i: int, prev_output: mtt.layer) -> mtt.layer:
-        layer_result = prev_output.dot(self._layers[i])
-        biased_result = layer_result + self._biases[i]
-        neurons_output = self._activation_function(biased_result)
-        return neurons_output
+    def forward(self, input_layer: mtt.layer) -> mtt.layer:
+        if input_layer.size != self._settings.input_count:
+            raise ValueError(
+                "Input layer size does not match the defined input size.")
+        return self._keep_all_forward(input_layer)[-1]
+
+    def compute_loss(self, predicted: mtt.layer, targets: mtt.layer) -> float:
+        """Calculate the scalar loss using the configured loss function."""
+        return self._settings.loss_function(predicted, targets)
+
+    def back_propagation(self, inputs: mtt.layer, targets: mtt.layer,
+                         learning_rate: float = 0.1):
+        if inputs.size != self._settings.input_count:
+            raise ValueError(
+                "Input layer size does not match the defined input size.")
+        if targets.size != self._settings.output_layer.neurons:
+            raise ValueError(
+                "Expected output size does not match the defined output size.")
+
+        activations = self._keep_all_forward(inputs)
+
+        current_loss = self.compute_loss(activations[-1], targets)
+        self.last_loss = current_loss
+        self.loss_history.append(current_loss)
+
+        delta = activations[-1] - targets
+
+        for i in reversed(range(len(self._layers))):
+            prev_activation = activations[i]
+            current = self.layers[i]
+
+            gradient = prev_activation.T.dot(delta)
+
+            if i > 0:
+                hidden_derivative = current.derivative_activation(
+                    prev_activation)
+                error = delta.dot(current.weights.T)
+                delta = error * hidden_derivative
+
+            current.weights -= learning_rate * gradient
 
     @property
     def layers(self):
         return self._layers
-
-    @property
-    def biases(self):
-        return self._biases
-
-    def _init_biases(self) -> mtt.biases:
-        biases_count = len(self._layers_definition.hidden_layers) + 1
-        biases: mtt.biases = []
-        for i in range(biases_count):
-            bias_count = self._layers_definition.hidden_layers[i] if i < len(self._layers_definition.hidden_layers) else self._layers_definition.output_size
-            bias = np.fromiter(
-                (self._layers_definition.default_weight() for _ in
-                 range(bias_count)),
-                dtype=np.float64,
-                count=bias_count)
-            biases.append(bias)
-        return biases
