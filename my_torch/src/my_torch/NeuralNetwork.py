@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import numpy as np
 
 from . import typing as mtt
@@ -5,7 +7,6 @@ from .Layer import Layer
 from .NNSettings import NNSettings
 
 __all__ = ["NeuralNetwork"]
-
 
 class NeuralNetwork:
     """A simple neural network class."""
@@ -80,13 +81,13 @@ class NeuralNetwork:
             current.weights -= learning_rate * gradient
         return current_loss
 
-    def train(self, train_data: list[tuple[mtt.layer, mtt.layer]], num_epoch: int = 100, learning_rate: float = 0.1):
+    def train(self, train_data: mtt.train_data, num_epoch: int = 100, learning_rate: float = 0.1):
         accuracy = []
         losses = []
         for j in range(num_epoch):
             epoch_losses = []
-            for x_sample, y_sample in train_data:
-                loss = self.back_propagation(x_sample, y_sample, learning_rate=learning_rate)
+            for inputs, target in train_data:
+                loss = self.back_propagation(inputs, target, learning_rate=learning_rate)
                 epoch_losses.append(loss)
             losses.append(np.mean(epoch_losses))
             accuracy.append((1 - losses[-1]) * 100)
