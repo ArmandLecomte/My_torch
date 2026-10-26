@@ -67,7 +67,7 @@ class NeuralNetwork:
 
         for i in reversed(range(len(self._layers))):
             prev_activation = activations[i]
-            current = self.layers[i]
+            current = self._layers[i]
 
             gradient = prev_activation.T.dot(delta)
 
@@ -91,8 +91,3 @@ class NeuralNetwork:
             losses.append(np.mean(epoch_losses))
             accuracy.append((1 - losses[-1]) * 100)
         return accuracy, losses
-
-
-    @property
-    def layers(self):
-        return self._layers
