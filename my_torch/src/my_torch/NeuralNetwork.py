@@ -59,26 +59,22 @@ class NeuralNetwork:
                 "Expected output size does not match the defined output size.")
 
         activations = self._keep_all_forward(inputs)
-
+        delta = activations[-1] - targets
         current_loss = self.compute_loss(activations[-1], targets)
         self.last_loss = current_loss
         self.loss_history.append(current_loss)
 
-        delta = activations[-1] - targets
-
         for i in reversed(range(len(self._layers))):
             prev_activation = activations[i]
             current = self._layers[i]
-
             gradient = prev_activation.T.dot(delta)
-
             if i > 0:
                 hidden_derivative = current.derivative_activation(
                     prev_activation)
                 error = delta.dot(current.weights.T)
                 delta = error * hidden_derivative
-
             current.weights -= learning_rate * gradient
+
         return current_loss
 
     def train(self, train_data: mtt.train_data, num_epoch: int = 100, learning_rate: float = 0.1):
