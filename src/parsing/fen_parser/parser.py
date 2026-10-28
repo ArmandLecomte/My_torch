@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .errors import FENParseError
-from .fen_position import FENPosition
+from .position import FENPosition
 
 
 _PIECES = frozenset("pnbrqkPNBRQK")
