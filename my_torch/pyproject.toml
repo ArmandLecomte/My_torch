@@ -7,7 +7,5 @@ name = "my_torch"
 version = "0.1.0"
 description = "A simple PyTorch-like library"
 
-[tool.setuptools]
-ext-modules = [
-    {name = "my_torch", sources = ["src/my_torch.cpp"]}
-]
+[tool.setuptools.packages.find]
+where = ["src"]
