@@ -30,10 +30,20 @@ def heaviside(x):
     return np.heaviside(x, 1)
 
 def relu(x):
+    """Compute the ReLU activation function."""
     return np.fmax(x, 0.0)
 
 def relu_derivative(x):
+    """Compute the derivative of the ReLU activation function."""
     return np.where(x > 0, 1.0, 0.0)
+
+def leaky_relu(x):
+    """Compute the leaky ReLU activation function with alpha=0.01."""
+    return np.where(x > 0, x, 0.01 * x)
+
+def leaky_relu_derivative(x):
+    """Compute the derivative of the leaky ReLU activation function with alpha=0.01."""
+    return np.where(x > 0, 1.0, 0.01)
 
 def linear(x):
     """Compute the linear activation function."""
