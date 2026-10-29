@@ -34,3 +34,11 @@ def relu(x):
 
 def relu_derivative(x):
     return np.where(x > 0, 1.0, 0.0)
+
+def linear(x):
+    """Compute the linear activation function."""
+    return x
+
+def linear_derivative(x):
+    """Compute the derivative of the linear activation function."""
+    return np.ones_like(x)
