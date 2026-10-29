@@ -42,3 +42,11 @@ def linear(x):
 def linear_derivative(x):
     """Compute the derivative of the linear activation function."""
     return np.ones_like(x)
+
+def tanh(x):
+    """Compute the hyperbolic tangent activation function."""
+    return np.tanh(x)
+
+def tanh_derivative(x):
+    """Compute the derivative of the hyperbolic tangent activation function."""
+    return 1 - np.tanh(x) ** 2
