@@ -1,3 +1,4 @@
+import pickle
 from dataclasses import dataclass
 
 import numpy as np
@@ -88,3 +89,12 @@ class NeuralNetwork:
             losses.append(np.mean(epoch_losses))
             accuracy.append((1 - losses[-1]) * 100)
         return accuracy, losses
+
+    def save(self, path: str):
+        with open(path, "wb") as file:
+            pickle.dump(self, file)
+
+    @staticmethod
+    def load(path: str) -> NeuralNetwork:
+        with open(path, "rb") as file:
+            return pickle.load(file)
