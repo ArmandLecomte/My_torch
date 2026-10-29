@@ -60,3 +60,11 @@ def tanh(x):
 def tanh_derivative(x):
     """Compute the derivative of the hyperbolic tangent activation function."""
     return 1 - np.tanh(x) ** 2
+
+def softplus(x):
+    """Compute the softplus activation function."""
+    return np.log1p(np.exp(x))
+
+def softplus_derivative(x):
+    """Compute the derivative of the softplus activation function."""
+    return 1 / (1 + np.exp(-x))
