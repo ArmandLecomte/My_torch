@@ -2,7 +2,7 @@ import numpy as np
 from . import typing as mtt
 
 __all__ = ["sigmoid", "sigmoid_derivative", "mse_loss", "mse_derivative",
-           "heaviside"]
+           "heaviside", "relu", "relu_derivative"]
 
 
 def sigmoid(x: mtt.layer) -> mtt.layer:
@@ -28,3 +28,9 @@ def mse_derivative(predicted: mtt.layer, targets: mtt.layer) -> mtt.layer:
 def heaviside(x):
     """Compute the Heaviside step function."""
     return np.heaviside(x, 1)
+
+def relu(x):
+    return np.fmax(x, 0.0)
+
+def relu_derivative(x):
+    return np.where(x > 0, 1.0, 0.0)
