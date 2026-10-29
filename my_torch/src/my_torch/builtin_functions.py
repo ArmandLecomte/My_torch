@@ -11,221 +11,172 @@ __all__ = [
 
 
 def sigmoid(x: mtt.layer) -> mtt.layer:
-    """Compute the sigmoid activation function: f(x) = 1 / (1 + exp(-x)).
+    """Compute sigmoid activation: 1 / (1 + exp(-x)).
 
-    Output Layer Only:
-        No (can be used in hidden layers, but primarily recommended for output layers).
-
-    When to use:
-        - Output Layer: Used for binary classification (single output predicting probability in (0, 1))
-          or multi-label classification (multiple independent probability outputs).
-        - Hidden Layers: Useful in shallow architectures or gating units, but generally avoided in deep
-          networks due to the vanishing gradient problem.
+    Output layer only: No (recommended for output layer).
+    Scenario: Binary classification or multi-label classification.
+    Solves: Maps unbounded inputs to bounded (0, 1) probabilities for threshold decisions.
     """
     return 1 / (1 + np.exp(-x))
 
 
 def sigmoid_derivative(x: mtt.layer) -> mtt.layer:
-    """Compute the derivative of the sigmoid activation function: f'(x) = f(x) * (1 - f(x)).
+    """Compute derivative of sigmoid activation: s * (1 - s).
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Backpropagation: Used to compute gradients with respect to pre-activation inputs for any layer
-          (hidden or output) utilizing the sigmoid activation function.
+    Output layer only: No.
+    Scenario: Backpropagation in layers using sigmoid activation.
+    Solves: Computes gradients efficiently from forward-pass activations.
     """
     return np.multiply(sigmoid(x), (1 - sigmoid(x)))
 
 
 def mse_loss(predicted: mtt.layer, targets: mtt.layer) -> float:
-    """Mean Squared Error (MSE): L = mean((y_hat - y)^2)"""
+    """Compute Mean Squared Error loss: mean((predicted - targets)^2).
+
+    Output layer only: Yes.
+    Scenario: Regression tasks predicting continuous numerical values.
+    Solves: Measures discrepancy between predictions and targets, penalizing larger errors quadratically.
+    """
     return float(np.mean((predicted - targets) ** 2))
 
 
 def mse_derivative(predicted: mtt.layer, targets: mtt.layer) -> mtt.layer:
-    """Derivative of MSE with respect to predictions (dLoss / dPredicted)."""
+    """Compute derivative of MSE loss with respect to predictions: 2 * (predicted - targets) / N.
+
+    Output layer only: Yes.
+    Scenario: Output layer backpropagation in MSE regression models.
+    Solves: Provides initial gradient direction and magnitude to initiate backward error propagation.
+    """
     return np.divide(2 * (predicted - targets), predicted.size)
 
 
 def heaviside(x):
-    """Compute the Heaviside step function: f(x) = 1 if x >= 0 else 0.
+    """Compute Heaviside step function: 1 if x >= 0 else 0.
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Binary Thresholding: Used in step-based perceptron models or decision units requiring hard binary
-          (0/1) outputs without smooth probability. Not suitable for standard gradient descent training
-          because its derivative is zero almost everywhere.
+    Output layer only: No.
+    Scenario: Hard-threshold binary decision units and step perceptrons.
+    Solves: Produces crisp discrete binary outputs (non-differentiable; not used in gradient descent).
     """
     return np.heaviside(x, 1)
 
 
 def relu(x):
-    """Compute the Rectified Linear Unit (ReLU) activation function: f(x) = max(0, x).
+    """Compute Rectified Linear Unit activation: max(0, x).
 
-    Output Layer Only:
-        No (primarily intended for hidden layers).
-
-    When to use:
-        - Hidden Layers: The standard default activation for hidden layers in deep neural networks to
-          mitigate vanishing gradients and ensure fast, computationally efficient training.
-        - Output Layer: Generally not recommended for output layers, except for specific regression tasks
-          where target outputs are strictly non-negative.
+    Output layer only: No (primarily for hidden layers).
+    Scenario: Default hidden layers in deep neural networks, or strictly non-negative outputs.
+    Solves: Eliminates vanishing gradients for positive inputs and accelerates training convergence.
     """
     return np.fmax(x, 0.0)
 
 
 def relu_derivative(x):
-    """Compute the derivative of the ReLU activation function: f'(x) = 1 if x > 0 else 0.
+    """Compute derivative of ReLU activation: 1 if x > 0 else 0.
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Backpropagation: Used during backward passes to calculate gradients for layers (primarily hidden
-          layers) using ReLU activation.
+    Output layer only: No.
+    Scenario: Backpropagation in layers using ReLU activation.
+    Solves: Passes full gradient through active neurons while zeroing inactive ones.
     """
     return np.where(x > 0, 1.0, 0.0)
 
 
 def leaky_relu(x):
-    """Compute the Leaky ReLU activation function: f(x) = x if x > 0 else 0.01 * x.
+    """Compute Leaky ReLU activation with alpha=0.01: x if x > 0 else 0.01 * x.
 
-    Output Layer Only:
-        No (primarily intended for hidden layers).
-
-    When to use:
-        - Hidden Layers: Used in hidden layers to prevent the "dying ReLU" problem by allowing a small,
-          non-zero gradient when the input is negative.
-        - Output Layer: Rarely used in output layers; applicable only when piecewise linear unbounded
-          positive and scaled negative outputs are specifically desired.
+    Output layer only: No (primarily for hidden layers).
+    Scenario: Hidden layers prone to neuron inactivity / deactivation.
+    Solves: Prevents the 'dying ReLU' issue by allowing small gradient flow for negative inputs.
     """
     return np.where(x > 0, x, 0.01 * x)
 
 
 def leaky_relu_derivative(x):
-    """Compute the derivative of the Leaky ReLU activation function with alpha=0.01.
+    """Compute derivative of Leaky ReLU activation with alpha=0.01.
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Backpropagation: Used during backward passes to calculate gradients for layers (primarily hidden
-          layers) using Leaky ReLU activation.
+    Output layer only: No.
+    Scenario: Backpropagation in layers using Leaky ReLU activation.
+    Solves: Ensures continuous gradient updates across all negative and positive inputs.
     """
     return np.where(x > 0, 1.0, 0.01)
 
 
 def linear(x):
-    """Compute the linear (identity) activation function: f(x) = x.
+    """Compute linear (identity) activation: x.
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Output Layer: Standard activation function for general regression tasks predicting unbounded
-          continuous values in (-inf, +inf).
-        - Hidden Layers: Used for linear bottleneck projections, dimensionality reduction, or identity
-          mappings (not recommended for general stacked hidden layers as multiple linear layers collapse
-          to a single linear mapping).
+    Output layer only: No (standard for output layer in regression).
+    Scenario: Regression output layers, linear bottlenecks, or identity skip connections.
+    Solves: Allows unbounded continuous predictions across (-inf, +inf) without compression.
     """
     return x
 
 
 def linear_derivative(x):
-    """Compute the derivative of the linear activation function: f'(x) = 1.
+    """Compute derivative of linear activation: 1.
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Backpropagation: Used to compute gradients for layers utilizing linear activation (passes
-          gradients through unchanged).
+    Output layer only: No.
+    Scenario: Backpropagation in layers using linear activation.
+    Solves: Passes incoming gradients through unchanged with unit scaling.
     """
     return np.ones_like(x)
 
 
 def tanh(x):
-    """Compute the hyperbolic tangent (tanh) activation function: f(x) = tanh(x).
+    """Compute hyperbolic tangent activation: tanh(x).
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Hidden Layers: Preferred in hidden layers when zero-centered activations in the range (-1, 1) are
-          advantageous for convergence.
-        - Output Layer: Used for regression or classification tasks where targets are strictly bounded
-          within [-1, 1].
+    Output layer only: No.
+    Scenario: Hidden layers needing zero-centered activations, or targets bounded in [-1, 1].
+    Solves: Centers activations around zero to avoid systematic gradient bias during optimization.
     """
     return np.tanh(x)
 
 
 def tanh_derivative(x):
-    """Compute the derivative of the hyperbolic tangent activation function: f'(x) = 1 - tanh(x)^2.
+    """Compute derivative of hyperbolic tangent activation: 1 - tanh(x)^2.
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Backpropagation: Used during backward passes to calculate gradients for layers (hidden or output)
-          using tanh activation.
+    Output layer only: No.
+    Scenario: Backpropagation in layers using tanh activation.
+    Solves: Scales gradients based on saturation level, providing smooth backpropagation updates.
     """
     return 1 - np.tanh(x) ** 2
 
 
 def softplus(x):
-    """Compute the softplus activation function: f(x) = log(1 + exp(x)).
+    """Compute softplus activation: log(1 + exp(x)).
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Hidden Layers: Used as a smooth, continuously differentiable alternative to ReLU.
-        - Output Layer: Used for regression tasks where predictions must be strictly positive continuous
-          values (e.g., standard deviations, variances, or rate parameters).
+    Output layer only: No.
+    Scenario: Hidden layers or output layers predicting strictly positive quantities (e.g., variance).
+    Solves: Provides a smooth, continuously differentiable approximation of ReLU with non-zero curvature.
     """
     return np.log1p(np.exp(x))
 
 
 def softplus_derivative(x):
-    """Compute the derivative of the softplus activation function: f'(x) = 1 / (1 + exp(-x)).
+    """Compute derivative of softplus activation: 1 / (1 + exp(-x)).
 
-    Output Layer Only:
-        No.
-
-    When to use:
-        - Backpropagation: Used during backward passes to calculate gradients for layers using softplus
-          activation (evaluates to the sigmoid function).
+    Output layer only: No.
+    Scenario: Backpropagation in layers using softplus activation.
+    Solves: Computes smooth sigmoid gradients avoiding sharp derivative discontinuities.
     """
     return 1 / (1 + np.exp(-x))
 
 
 def softmax(x):
-    """Compute the softmax activation function: f(x)_i = exp(x_i - max(x)) / sum(exp(x_j - max(x))).
+    """Compute softmax activation: exp(x - max(x)) / sum(exp(x - max(x))).
 
-    Output Layer Only:
-        Yes (almost exclusively used in output layers).
-
-    When to use:
-        - Output Layer: Used in the output layer for multi-class classification problems to convert
-          unnormalized logits into a mutually exclusive probability distribution summing to 1 across classes.
-          Not suitable for hidden layers because it normalizes across all neurons in the layer.
+    Output layer only: Yes.
+    Scenario: Output layer in multi-class classification tasks.
+    Solves: Normalizes class scores into a valid probability distribution summing to 1 across mutually exclusive classes.
     """
     e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
     return e_x / np.sum(e_x, axis=-1, keepdims=True)
 
 
 def softmax_derivative(x):
-    """Compute the derivative of the softmax activation function.
+    """Compute derivative of softmax activation: s * (1 - s).
 
-    Output Layer Only:
-        Yes (matches softmax output layer).
-
-    When to use:
-        - Backpropagation: Used during backward passes to compute gradients for output layers utilizing
-          softmax activation.
+    Output layer only: Yes.
+    Scenario: Backpropagation in output layers using softmax activation.
+    Solves: Computes diagonal gradient response for multi-class probability outputs.
     """
     s = softmax(x)
     return s * (1 - s)
