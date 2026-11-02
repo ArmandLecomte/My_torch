@@ -1,14 +1,34 @@
 """A simple library like PyTorch."""
 
-from . import Layer, NNSettings, NeuralNetwork, typing
+from . import builtin_functions, typing
 from .Layer import Layer
 from .NNSettings import LayerSettings, NNSettings
 from .NeuralNetwork import NeuralNetwork
-from .builtin_functions import sigmoid, sigmoid_derivative, mse_loss, mse_derivative
-
-_modules = [NeuralNetwork, NNSettings, Layer, builtin_functions]
+from .builtin_functions import (
+    heaviside,
+    leaky_relu,
+    leaky_relu_derivative,
+    linear,
+    linear_derivative,
+    mse_derivative,
+    mse_loss,
+    relu,
+    relu_derivative,
+    sigmoid,
+    sigmoid_derivative,
+    softmax,
+    softmax_derivative,
+    softplus,
+    softplus_derivative,
+    tanh,
+    tanh_derivative,
+)
 
 __all__ = [
+    "Layer",
+    "LayerSettings",
+    "NNSettings",
+    "NeuralNetwork",
     "typing",
-    *(symbol for module in _modules for symbol in getattr(module, "__all__", [])),
+    *builtin_functions.__all__,
 ]

@@ -95,6 +95,6 @@ class NeuralNetwork:
             pickle.dump(self, file)
 
     @staticmethod
-    def load(path: str) -> NeuralNetwork:
+    def load(path: str) -> "NeuralNetwork":
         with open(path, "rb") as file:
             return pickle.load(file)
