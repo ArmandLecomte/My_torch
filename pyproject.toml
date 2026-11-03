@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mytorch-fen-parser"
+version = "0.1.0"
+description = "FEN parser for MyTorch"
+requires-python = ">=3.10"
+
+[project.scripts]
+fen-parser = "parsing.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["parsing*"]
+
+[tool.setuptools.package-data]
+parsing = ["data/*.txt", "fen_format"]

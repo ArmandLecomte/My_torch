@@ -5,7 +5,7 @@ import numpy as np
 
 __all__ = ["weight", "layer", "bias", "biases", "bias_function",
            "weight_function", "activation_function", "derivative_activation",
-           "loss_function", "loss_derivative", "train_data"]
+           "loss_function", "loss_derivative", "train_data", "DataPair"]
 
 type _1d = tuple[int]
 type _2d = tuple[int, int]
