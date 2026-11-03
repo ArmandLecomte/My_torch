@@ -78,7 +78,7 @@ class NeuralNetwork:
 
         return current_loss
 
-    def train(self, train_data: mtt.train_data, num_epoch: int = 100, learning_rate: float = 0.1):
+    def train(self, train_data: mtt.train_data, num_epoch: int = 100, learning_rate: float = 0.1, ):
         accuracy = []
         losses = []
         for j in range(num_epoch):

@@ -1,6 +1,7 @@
 """A simple library like PyTorch."""
 
 from . import builtin_functions, typing
+from .LearningRate import LRScheduler, ExponentialLR, ConstantLR
 from .Layer import Layer
 from .NNSettings import LayerSettings, NNSettings
 from .NeuralNetwork import NeuralNetwork
@@ -30,5 +31,8 @@ __all__ = [
     "NNSettings",
     "NeuralNetwork",
     "typing",
+    "ExponentialLR",
+    "LRScheduler",
+    "ConstantLR",
     *builtin_functions.__all__,
 ]
