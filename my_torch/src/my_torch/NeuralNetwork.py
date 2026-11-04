@@ -1,10 +1,11 @@
+import copy
 import pickle
-from dataclasses import dataclass
 
 import numpy as np
 
 from . import typing as mtt
 from .Layer import Layer
+from .LearningRate import LRScheduler
 from .NNSettings import NNSettings
 
 __all__ = ["NeuralNetwork"]
@@ -14,6 +15,8 @@ class NeuralNetwork:
 
     def __init__(self, settings: NNSettings):
         self._settings: NNSettings = settings
+        # The network owns its scheduler so the caller's settings stay untouched.
+        self.lr_scheduler: LRScheduler = copy.deepcopy(settings.lr_scheduler)
         self._layers: list[Layer] = self._init_layers()
         self.last_loss: float | None = None
         self.loss_history: list[float] = []
@@ -51,7 +54,8 @@ class NeuralNetwork:
         return self._settings.loss_function(predicted, targets)
 
     def back_propagation(self, inputs: mtt.layer, targets: mtt.layer,
-                         learning_rate: float = 0.1):
+                         learning_rate: float | None = None):
+        """Run one update. Uses the scheduler's rate unless `learning_rate` overrides it."""
         if inputs.size != self._settings.input_count:
             raise ValueError(
                 "Input layer size does not match the defined input size.")
@@ -59,6 +63,8 @@ class NeuralNetwork:
             raise ValueError(
                 "Expected output size does not match the defined output size.")
 
+        if learning_rate is None:
+            learning_rate = self.lr_scheduler.get_learning_rate()
         activations = self._keep_all_forward(inputs)
         delta = activations[-1] - targets
         current_loss = self.compute_loss(activations[-1], targets)
@@ -78,16 +84,21 @@ class NeuralNetwork:
 
         return current_loss
 
-    def train(self, train_data: mtt.train_data, num_epoch: int = 100, learning_rate: float = 0.1, ):
+    def step_lr_scheduler(self) -> None:
+        """Advance the scheduler by one epoch (done by `train`; call it in custom loops)."""
+        self.lr_scheduler.step()
+
+    def train(self, train_data: mtt.train_data, num_epoch: int = 100):
         accuracy = []
         losses = []
         for j in range(num_epoch):
             epoch_losses = []
             for inputs, target in train_data:
-                loss = self.back_propagation(inputs, target, learning_rate=learning_rate)
+                loss = self.back_propagation(inputs, target)
                 epoch_losses.append(loss)
             losses.append(np.mean(epoch_losses))
             accuracy.append((1 - losses[-1]) * 100)
+            self.step_lr_scheduler()
         return accuracy, losses
 
     def save(self, path: str):

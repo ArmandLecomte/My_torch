@@ -1,5 +1,6 @@
-from dataclasses import dataclass
-from . import typing as mtt, LRScheduler, ConstantLR
+from dataclasses import dataclass, field
+from . import typing as mtt
+from .LearningRate import LRScheduler, ConstantLR
 from .builtin_functions import mse_loss, mse_derivative
 
 __all__ = ["LayerSettings", "NNSettings"]
@@ -12,7 +13,6 @@ class LayerSettings:
     default_bias: mtt.bias_function
     activation_function: mtt.activation_function
     derivative_activation: mtt.derivative_activation
-    lr_scheduler: LRScheduler = ConstantLR(0.1)
 
 
 @dataclass
@@ -22,3 +22,4 @@ class NNSettings:
     output_layer: LayerSettings
     loss_function: mtt.loss_function = mse_loss
     loss_derivative: mtt.loss_derivative = mse_derivative
+    lr_scheduler: LRScheduler = field(default_factory=lambda: ConstantLR(0.1))
