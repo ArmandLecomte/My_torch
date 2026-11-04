@@ -1,6 +1,5 @@
 import argparse
 import os.path
-from pathlib import Path
 from sys import stderr
 
 from my_torch import NNGenerator
