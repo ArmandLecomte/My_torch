@@ -76,8 +76,7 @@ class NeuralNetwork:
             current = self._layers[i]
             gradient = prev_activation.T.dot(delta)
             if i > 0:
-                hidden_derivative = current.derivative_activation(
-                    prev_activation)
+                hidden_derivative = current.activation_function.backward(prev_activation)
                 error = delta.dot(current.weights.T)
                 delta = error * hidden_derivative
             current.weights -= learning_rate * gradient

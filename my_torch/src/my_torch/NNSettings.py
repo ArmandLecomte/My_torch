@@ -12,7 +12,6 @@ class LayerSettings:
     default_weight: mtt.weight_function
     default_bias: mtt.bias_function
     activation_function: mtt.activation_function
-    derivative_activation: mtt.derivative_activation
 
 
 @dataclass

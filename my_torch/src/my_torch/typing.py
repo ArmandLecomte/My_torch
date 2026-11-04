@@ -4,7 +4,7 @@ from typing import Callable
 import numpy as np
 
 __all__ = ["weight", "layer", "bias", "biases", "bias_function",
-           "weight_function", "activation_function", "derivative_activation",
+           "weight_function", "activation_function",
            "loss_function", "loss_derivative", "train_data", "DataPair"]
 
 type _1d = tuple[int]
@@ -19,8 +19,7 @@ type biases = np.ndarray[_1d, np.dtype[bias]]
 type bias_function = Callable[[], float]
 type weight_function = Callable[[], float]
 
-type activation_function = Callable[[layer], layer]
-type derivative_activation = activation_function
+type activation_function = type["ActivationFunction"]
 
 type loss_function = Callable[[layer, layer], float]
 type loss_derivative = Callable[[layer, layer], layer]
