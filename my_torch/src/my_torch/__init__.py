@@ -16,6 +16,7 @@ from .LearningRate import LRScheduler, ExponentialLR, ConstantLR, StepLR
 from .Layer import Layer
 from .NNSettings import LayerSettings, NNSettings
 from .NeuralNetwork import NeuralNetwork
+from .NNGenerator import generate_neural_network
 from .builtin_functions import (
     mse_derivative,
     mse_loss,
@@ -35,6 +36,7 @@ __all__ = [
     "LayerSettings",
     "NNSettings",
     "NeuralNetwork",
+    "generate_neural_network",
     "typing",
     "ExponentialLR",
     "LRScheduler",

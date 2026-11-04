@@ -30,6 +30,50 @@ pip install -r requirements.txt
 python src/torch_generator/main.py --help
 ```
 
+The library API for generating a network from a JSON configuration is
+`my_torch.generate_neural_network`. Each call reads the configuration and
+creates a fresh network with independently sampled weights and biases. For
+example, four networks can be generated from the same file like this:
+
+```python
+from my_torch import generate_neural_network
+
+networks = [generate_neural_network("config1.json") for _ in range(4)]
+```
+
+A configuration specifies the input size, hidden layers, output layer, and an
+optional learning-rate scheduler. Each layer requires a neuron count, an
+activation name, and weight and bias initializers. Supported activations are
+`Sigmoid`, `Heaviside`, `ReLU`, `LeakyReLU`, `Linear`, `Tanh`, `Softplus`, and
+`Softmax`; initializer types are `uniform`, `normal`, and `constant`.
+
+```json
+{
+  "input_count": 3,
+  "hidden_layers": [
+    {
+      "neurons": 8,
+      "activation_function": "ReLU",
+      "weight_initializer": {"type": "uniform", "low": -0.1, "high": 0.1},
+      "bias_initializer": {"type": "constant", "value": 0.0}
+    }
+  ],
+  "output_layer": {
+    "neurons": 2,
+    "activation_function": "Softmax",
+    "weight_initializer": {"type": "normal", "mean": 0.0, "std": 0.05},
+    "bias_initializer": {"type": "constant", "value": 0.0}
+  },
+  "lr_scheduler": {"type": "exponential", "initial_lr": 0.1, "decay_rate": 0.98}
+}
+```
+
+Scheduler types are `constant`, `exponential`, and `step`; the `step` scheduler
+accepts an optional `gamma` (default `0.1`). If `lr_scheduler` is omitted, the
+library's default constant learning rate is used. The loss defaults to MSE.
+`Heaviside` has no backward implementation, so it cannot be used in layers that
+need gradient-based training.
+
 ### Run the Jupyter benchmark
 
 The notebook `my_torch/notebooks/neural_network_benchmark.ipynb` trains and compares

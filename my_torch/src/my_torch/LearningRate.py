@@ -1,3 +1,7 @@
+from typing import Any
+
+from ._config import get_finite_number, get_positive_integer, validate_mapping
+
 __all__ = ["LRScheduler", "ConstantLR", "ExponentialLR", "StepLR"]
 
 
@@ -26,12 +30,33 @@ class LRScheduler:
 
 
 class ConstantLR(LRScheduler):
+    @classmethod
+    def from_config(cls, config: Any, description: str) -> "ConstantLR":
+        config = validate_mapping(config, {"type", "initial_lr"}, set(), description)
+        initial_lr = get_finite_number(config["initial_lr"], f"{description}.initial_lr")
+        if initial_lr <= 0:
+            raise ValueError(f"{description}.initial_lr must be greater than zero.")
+        return cls(initial_lr)
+
     def compute(self, epoch: int) -> float:
         return self.initial_lr
 
 
 class ExponentialLR(LRScheduler):
     """lr = initial_lr * decay_rate ** epoch"""
+
+    @classmethod
+    def from_config(cls, config: Any, description: str) -> "ExponentialLR":
+        config = validate_mapping(
+            config, {"type", "initial_lr", "decay_rate"}, set(), description
+        )
+        initial_lr = get_finite_number(config["initial_lr"], f"{description}.initial_lr")
+        decay_rate = get_finite_number(config["decay_rate"], f"{description}.decay_rate")
+        if initial_lr <= 0:
+            raise ValueError(f"{description}.initial_lr must be greater than zero.")
+        if not 0 < decay_rate <= 1:
+            raise ValueError(f"{description}.decay_rate must be in the range (0, 1].")
+        return cls(initial_lr, decay_rate)
 
     def __init__(self, initial_lr: float, decay_rate: float):
         super().__init__(initial_lr)
@@ -43,6 +68,23 @@ class ExponentialLR(LRScheduler):
 
 class StepLR(LRScheduler):
     """lr = initial_lr * gamma ** (epoch // step_size)"""
+
+    @classmethod
+    def from_config(cls, config: Any, description: str) -> "StepLR":
+        config = validate_mapping(
+            config,
+            {"type", "initial_lr", "step_size"},
+            {"gamma"},
+            description,
+        )
+        initial_lr = get_finite_number(config["initial_lr"], f"{description}.initial_lr")
+        step_size = get_positive_integer(config["step_size"], f"{description}.step_size")
+        gamma = get_finite_number(config.get("gamma", 0.1), f"{description}.gamma")
+        if initial_lr <= 0:
+            raise ValueError(f"{description}.initial_lr must be greater than zero.")
+        if not 0 < gamma <= 1:
+            raise ValueError(f"{description}.gamma must be in the range (0, 1].")
+        return cls(initial_lr, step_size, gamma)
 
     def __init__(self, initial_lr: float, step_size: int, gamma: float = 0.1):
         super().__init__(initial_lr)
