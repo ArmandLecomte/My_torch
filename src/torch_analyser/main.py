@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import pickle
 import sys
 from argparse import ArgumentParser, Namespace
