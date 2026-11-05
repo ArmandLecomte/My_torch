@@ -6,7 +6,7 @@ It also features a chessboard analyzer made with it and a
 
 ## Requirements
 
-- Python 3.15+
+- Python 3.12+
 
 > [!TIP]
 > We suggest that you use a virtual environment for python (e.g., [venv](https://docs.python.org/3/library/venv.html#creating-virtual-environments))
@@ -16,18 +16,20 @@ It also features a chessboard analyzer made with it and a
 pip install ./my_torch
 ```
 
-### Run the analyzer
+### Build and run the command-line tools
 
 ```bash
-pip install -r requirements.txt
-python src/torch_analyzer/main.py --help
+make
+./my_torch_analyser --help
+./my_torch_generator --help
 ```
 
-### Run the generator
+Build one tool with `make analyser` or `make generator`. The generator takes
+pairs of configuration file and model count, and writes the generated models
+next to each configuration file:
 
 ```bash
-pip install -r requirements.txt
-python src/torch_generator/main.py --help
+./my_torch_generator config.json 3
 ```
 
 The library API for generating a network from a JSON configuration is
