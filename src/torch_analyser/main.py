@@ -1,4 +1,3 @@
-import argparse
 import pickle
 import sys
 from argparse import ArgumentParser, Namespace
@@ -19,7 +18,6 @@ _CLASS_NAMES = {
         "Checkmate White", "Checkmate Black"),
 }
 _EPOCHS = 100
-_LEARNING_RATE = 0.05
 
 
 class _ArgumentParser(ArgumentParser):
@@ -95,11 +93,7 @@ def execute_train(args: Namespace) -> int:
         targets[0, class_index] = 1.0
         training_data.append(DataPair(inputs, targets))
 
-    network.train(
-        training_data,
-        num_epoch=_EPOCHS,
-        learning_rate=_LEARNING_RATE,
-    )
+    network.train(training_data, num_epoch=_EPOCHS)
     network.save(args.save or args.LOADFILE)
     return 0
 
