@@ -34,15 +34,11 @@ class Layer:
     def apply(self, layer_input: mtt.layer):
         layer_result = layer_input.dot(self.weights)
         biased_result = layer_result + self.biases
-        return self.activation_function(biased_result)
+        return self.activation_function.forward(biased_result)
 
     @property
     def activation_function(self):
         return self._settings.activation_function
-
-    @property
-    def derivative_activation(self):
-        return self._settings.derivative_activation
 
     @property
     def default_weight(self):
