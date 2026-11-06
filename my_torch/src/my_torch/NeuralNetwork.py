@@ -10,6 +10,31 @@ from .NNSettings import NNSettings
 
 __all__ = ["NeuralNetwork"]
 
+
+def _legacy_uniform_weight() -> float:
+    raise RuntimeError(
+        "the original initializer from the training notebook is unavailable"
+    )
+
+
+def _legacy_zero_bias() -> float:
+    return 0.0
+
+
+class _NetworkUnpickler(pickle.Unpickler):
+    """Resolve initializer functions stored by older notebook-trained models."""
+
+    def find_class(self, module: str, name: str):
+        if module == "__main__":
+            legacy_initializers = {
+                "uniform_weight": _legacy_uniform_weight,
+                "zero_bias": _legacy_zero_bias,
+            }
+            if name in legacy_initializers:
+                return legacy_initializers[name]
+        return super().find_class(module, name)
+
+
 class NeuralNetwork:
     """A simple neural network class."""
 
@@ -107,4 +132,4 @@ class NeuralNetwork:
     @staticmethod
     def load(path: str) -> "NeuralNetwork":
         with open(path, "rb") as file:
-            return pickle.load(file)
+            return _NetworkUnpickler(file).load()
