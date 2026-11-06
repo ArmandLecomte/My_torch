@@ -7,12 +7,16 @@
 
 ANALYSER_NAME = my_torch_analyser
 GENERATOR_NAME = my_torch_generator
+PYTHON ?= python3
 
 all: analyser generator
 
-analyser: $(ANALYSER_NAME)
+install-deps:
+	$(PYTHON) -m pip install -r requierements.txt
 
-generator: $(GENERATOR_NAME)
+analyser: install-deps $(ANALYSER_NAME)
+
+generator: install-deps $(GENERATOR_NAME)
 
 $(ANALYSER_NAME): src/torch_analyser/main.py
 	cp $< $@
@@ -30,4 +34,4 @@ fclean: clean
 re: fclean
 	$(MAKE) all
 
-.PHONY: all analyser generator clean fclean re
+.PHONY: all install-deps analyser generator clean fclean re
