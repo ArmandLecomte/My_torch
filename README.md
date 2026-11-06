@@ -19,10 +19,15 @@ pip install ./my_torch
 ### Build and run the command-line tools
 
 ```bash
+python -m pip install -r requierements.txt
 make
 ./my_torch_analyser --help
 ./my_torch_generator --help
 ```
+
+`make` installs the project dependencies using `python3 -m pip` before building
+the command-line tools. Activate your virtual environment first if you want the
+dependencies installed there.
 
 Build one tool with `make analyser` or `make generator`. The generator takes
 pairs of configuration file and model count, and writes the generated models
