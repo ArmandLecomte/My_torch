@@ -69,6 +69,25 @@ def _class_names_for(network: NeuralNetwork) -> tuple[str, ...]:
     return class_names
 
 
+def _create_numba_gpu_trainer():
+    try:
+        from bonus.numba_gpu_trainer import NumbaGPUTrainer
+    except ModuleNotFoundError as import_error:
+        if import_error.name != "bonus":
+            raise
+        print("Numba CUDA trainer is unavailable, using CPU training.", file=sys.stderr)
+        return None
+
+    try:
+        return NumbaGPUTrainer()
+    except RuntimeError as runtime_error:
+        print(
+            f"Numba CUDA unavailable ({runtime_error}), using CPU training.",
+            file=sys.stderr,
+        )
+        return None
+
+
 def execute_train(args: Namespace) -> int:
     parser = FENParser()
     records = parser.parse_file(args.CHESSFILE)
@@ -94,7 +113,18 @@ def execute_train(args: Namespace) -> int:
         targets[0, class_index] = 1.0
         training_data.append(DataPair(inputs, targets))
 
-    network.train(training_data, num_epoch=_EPOCHS)
+    gpu_trainer = _create_numba_gpu_trainer()
+    if gpu_trainer is None:
+        network.train(training_data, num_epoch=_EPOCHS)
+    elif gpu_trainer.supports_network(network):
+        print("Using Numba CUDA training.")
+        gpu_trainer.train(network, training_data, num_epoch=_EPOCHS)
+    else:
+        print(
+            "Numba CUDA does not support this network; using CPU training.",
+            file=sys.stderr,
+        )
+        network.train(training_data, num_epoch=_EPOCHS)
     network.save(args.save or args.LOADFILE)
     return 0
 
