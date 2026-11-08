@@ -16,6 +16,11 @@ from .ActivationFunction import (
     Softplus,
     Tanh,
 )
+from .LossFunction import (
+    CategoricalCrossEntropyLoss,
+    LossFunction,
+    MSELoss,
+)
 from ._config import get_finite_number as _finite_number
 from ._config import get_positive_integer as _positive_integer
 from ._config import validate_mapping as _validate_mapping
@@ -106,6 +111,12 @@ _ACTIVATIONS: dict[str, type[ActivationFunction]] = {
 }
 
 
+_LOSS_FUNCTIONS: dict[str, type[LossFunction]] = {
+    "mse": MSELoss,
+    "categorical_crossentropy": CategoricalCrossEntropyLoss,
+}
+
+
 _Initializer = UniformInitializer | NormalInitializer | ConstantInitializer
 _InitializerFactory = Callable[[Any, str], _Initializer]
 
@@ -166,11 +177,24 @@ def _learning_rate_scheduler(config: Any) -> LRScheduler:
     return _apply_factory(_SCHEDULERS, config, description)
 
 
+def _loss_function(config: Any, description: str) -> type[LossFunction]:
+    if not isinstance(config, str):
+        raise ValueError(f"{description} must be a string.")
+    name = config.lower()
+    loss_class = _LOSS_FUNCTIONS.get(name)
+    if loss_class is None:
+        supported = ", ".join(sorted(_LOSS_FUNCTIONS))
+        raise ValueError(
+            f"Unknown {description} {config!r}; supported loss functions are: {supported}."
+        )
+    return loss_class
+
+
 def _settings(config: Any) -> NNSettings:
     config = _validate_mapping(
         config,
         {"input_count", "hidden_layers", "output_layer"},
-        {"lr_scheduler"},
+        {"lr_scheduler", "loss_function"},
         "network configuration",
     )
     input_count = _positive_integer(config["input_count"], "input_count")
@@ -188,6 +212,10 @@ def _settings(config: Any) -> NNSettings:
         hidden_layers=hidden_layers,
         output_layer=output_layer,
     )
+    if "loss_function" in config:
+        loss_class = _loss_function(config["loss_function"], "loss_function")
+        settings.loss_function = loss_class.function
+        settings.loss_derivative = loss_class.derivative
     if "lr_scheduler" in config:
         settings.lr_scheduler = _learning_rate_scheduler(config["lr_scheduler"])
     return settings

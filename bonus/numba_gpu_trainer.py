@@ -267,6 +267,20 @@ class NumbaGPUTrainer:
                 and getattr(loss_function, "__name__", None) == "mse_loss"
         )
         is_cross_entropy = loss_function is softmax_cross_entropy_loss
+
+        # Also recognize the class-based loss functions from LossFunction.py
+        loss_function_module = getattr(loss_function, "__module__", None)
+        loss_function_name = getattr(loss_function, "__name__", None)
+        if loss_function_module == "my_torch.LossFunction":
+            if loss_function_name == "function":
+                # Static methods on LossFunction subclasses lose the class context,
+                # so check the qualified name to distinguish MSELoss vs CategoricalCrossEntropyLoss
+                qualname = getattr(loss_function, "__qualname__", None)
+                if qualname == "MSELoss.function":
+                    is_mse = True
+                elif qualname == "CategoricalCrossEntropyLoss.function":
+                    is_cross_entropy = True
+
         return is_mse, is_cross_entropy
 
     @staticmethod

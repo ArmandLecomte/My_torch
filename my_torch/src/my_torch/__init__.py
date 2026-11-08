@@ -14,6 +14,11 @@ from .ActivationFunction import (
 )
 from .LearningRate import LRScheduler, ExponentialLR, ConstantLR, StepLR
 from .Layer import Layer
+from .LossFunction import (
+    CategoricalCrossEntropyLoss,
+    LossFunction,
+    MSELoss,
+)
 from .NNSettings import LayerSettings, NNSettings
 from .NeuralNetwork import NeuralNetwork
 from .NNGenerator import generate_neural_network
@@ -33,6 +38,9 @@ __all__ = [
     "Tanh",
     "Softplus",
     "Softmax",
+    "LossFunction",
+    "MSELoss",
+    "CategoricalCrossEntropyLoss",
     "LayerSettings",
     "NNSettings",
     "NeuralNetwork",
