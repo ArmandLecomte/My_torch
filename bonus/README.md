@@ -57,7 +57,7 @@ request the bonus GPU trainer, install the optional dependency above and pass
 `--bonus`:
 
 ```bash
-./my_torch_analyser --train --bonus \
+./my_torch_analyzer --train --bonus \
   my_torch/trained_models/baseline.nn \
   my_torch/dataset/checkmate/many_pieces.txt
 ```

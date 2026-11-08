@@ -5,20 +5,20 @@
 ## Makefile
 ##
 
-ANALYSER_NAME = my_torch_analyser
+ANALYZER_NAME = my_torch_analyzer
 GENERATOR_NAME = my_torch_generator
 PYTHON ?= python3
 
-all: analyser generator
+all: analyzer generator
 
 install-deps:
 	$(PYTHON) -m pip install -r requierements.txt
 
-analyser: install-deps $(ANALYSER_NAME)
+analyzer: install-deps $(ANALYZER_NAME)
 
 generator: install-deps $(GENERATOR_NAME)
 
-$(ANALYSER_NAME): src/torch_analyser/main.py
+$(ANALYZER_NAME): src/torch_analyzer/main.py
 	cp $< $@
 	chmod a+x $@
 
@@ -27,11 +27,11 @@ $(GENERATOR_NAME): src/torch_generator/main.py
 	chmod a+x $@
 
 clean:
-	$(RM) $(ANALYSER_NAME) $(GENERATOR_NAME)
+	$(RM) $(ANALYZER_NAME) $(GENERATOR_NAME)
 
 fclean: clean
 
 re: fclean
 	$(MAKE) all
 
-.PHONY: all install-deps analyser generator clean fclean re
+.PHONY: all install-deps analyzer generator clean fclean re

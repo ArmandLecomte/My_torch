@@ -21,7 +21,7 @@ pip install ./my_torch
 ```bash
 python -m pip install -r requierements.txt
 make
-./my_torch_analyser --help
+./my_torch_analyzer --help
 ./my_torch_generator --help
 ```
 
