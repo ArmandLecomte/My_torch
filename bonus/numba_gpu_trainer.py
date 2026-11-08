@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from math import ceil, exp, log1p, tanh
-from typing import Sequence
+from typing import Callable, Sequence
 
 import numpy as np
 
@@ -181,15 +181,17 @@ class NumbaGPUTrainer:
     differentiable/implementable by these CUDA kernels and are rejected.
     """
 
-    def __init__(self, batch_size: int = 32, threads_per_block: int = 128):
+    def __init__(self, batch_size: int = 512, threads_per_block: int = 128):
         if cuda is None:
-            error = RuntimeError(
+            if _CUDA_IMPORT_ERROR is not None:
+                raise RuntimeError(
+                    "Numba CUDA could not initialize. Install bonus/requirements.txt "
+                    "and check the CUDA runtime/compiler libraries."
+                ) from _CUDA_IMPORT_ERROR
+            raise RuntimeError(
                 "Numba CUDA is unavailable. Install bonus/requirements.txt and "
                 "use a system with a supported NVIDIA GPU and CUDA driver."
             )
-            if _CUDA_IMPORT_ERROR is not None:
-                raise error from _CUDA_IMPORT_ERROR
-            raise error
         try:
             cuda_available = cuda.is_available()
         except (OSError, RuntimeError) as error:
@@ -240,10 +242,30 @@ class NumbaGPUTrainer:
     def _prepare_data(train_data: Sequence) -> tuple[np.ndarray, np.ndarray]:
         if not train_data:
             raise ValueError("train_data must contain at least one sample.")
-        inputs = np.asarray([sample[0] for sample in train_data], dtype=np.float64)
-        targets = np.asarray([sample[1] for sample in train_data], dtype=np.float64)
-        if inputs.ndim != 2 or targets.ndim != 2:
-            raise ValueError("Training inputs and targets must be one-dimensional arrays.")
+
+        def stack_vectors(values, name: str) -> np.ndarray:
+            vectors = []
+            for value in values:
+                vector = np.asarray(value, dtype=np.float64)
+                if vector.ndim == 2 and vector.shape[0] == 1:
+                    vector = vector[0]
+                if vector.ndim != 1:
+                    raise ValueError(
+                        f"Each training {name} must be a one-dimensional array "
+                        "or a single-row matrix."
+                    )
+                vectors.append(vector)
+            try:
+                return np.stack(vectors)
+            except ValueError as error:
+                raise ValueError(
+                    f"All training {name} vectors must have the same size."
+                ) from error
+
+        inputs = stack_vectors((sample[0] for sample in train_data), "input")
+        targets = stack_vectors((sample[1] for sample in train_data), "target")
+        if len(inputs) != len(targets):
+            raise ValueError("Training input and target counts must match.")
         return np.ascontiguousarray(inputs), np.ascontiguousarray(targets)
 
     @staticmethod
@@ -438,7 +460,13 @@ class NumbaGPUTrainer:
             layer.weights[...] = weights.copy_to_host()
             layer.biases[...] = biases.copy_to_host()
 
-    def train(self, network, train_data: Sequence, num_epoch: int = 100):
+    def train(
+        self,
+        network,
+        train_data: Sequence,
+        num_epoch: int = 100,
+        epoch_callback: Callable[[int, float], None] | None = None,
+    ):
         """Train with mini-batch gradient descent; return accuracy and MSE per epoch."""
         inputs, targets, layers, activation_codes = self._validate_training(
             network, train_data, num_epoch
@@ -461,6 +489,9 @@ class NumbaGPUTrainer:
             loss_history.append(mean_loss)
             accuracy_history.append((1.0 - mean_loss) * 100.0)
             network.lr_scheduler.step()
+            if epoch_callback is not None:
+                self._copy_parameters_to_network(layers, device_weights, device_biases)
+                epoch_callback(len(loss_history), mean_loss)
 
         self._copy_parameters_to_network(layers, device_weights, device_biases)
 

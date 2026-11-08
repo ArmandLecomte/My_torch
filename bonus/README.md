@@ -14,7 +14,7 @@ visible.
 
 ## Numba CUDA trainer
 
-Install the optional CUDA dependency:
+Install the optional Numba CUDA package and CUDA runtime/compiler libraries:
 
 ```bash
 python -m pip install -r bonus/requirements.txt
@@ -22,7 +22,8 @@ python -m pip install -r bonus/requirements.txt
 
 `NumbaGPUTrainer` trains a `my_torch.NeuralNetwork` on an NVIDIA GPU with
 mini-batch gradient descent. The machine needs a supported NVIDIA GPU and CUDA
-driver; the class raises a clear error if CUDA is unavailable. It currently
+driver; the requirements install CUDA 12 runtime and compiler libraries in the
+Python environment. It currently
 supports the MSE loss and the `Sigmoid`, `ReLU`, `LeakyReLU`, `Linear`, `Tanh`,
 `Softplus`, and `Softmax` activations. `Heaviside` and custom losses are not
 supported.
@@ -40,6 +41,16 @@ The trainer updates the supplied network and its learning-rate scheduler in
 place. Unlike `NeuralNetwork.train`, it performs one averaged gradient update
 per mini-batch rather than one update per sample.
 
-The `my_torch_analyser --train` command automatically selects this trainer when
-Numba CUDA is available and the network uses a supported loss and activations.
-Otherwise, it reports the reason and uses the regular CPU trainer.
+The command-line analyzer uses its regular trainer by default. To explicitly
+request the bonus GPU trainer, install the optional dependency above and pass
+`--bonus`:
+
+```bash
+./my_torch_analyser --train --bonus \
+  my_torch/trained_models/baseline.nn \
+  my_torch/dataset/checkmate/many_pieces.txt
+```
+
+Without `--bonus`, the optional trainer is not loaded. If `--bonus` is requested
+but the trainer is unavailable, training falls back to the standard CPU trainer.
+Networks unsupported by the bonus trainer are rejected.
