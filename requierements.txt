@@ -1,1 +1,3 @@
-argparse
+-e ./my_torch
+-e .
+pygame>=2.5

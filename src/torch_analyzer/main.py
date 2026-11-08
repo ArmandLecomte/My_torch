@@ -69,6 +69,31 @@ def _class_names_for(network: NeuralNetwork) -> tuple[str, ...]:
     return class_names
 
 
+def _create_numba_gpu_trainer():
+    try:
+        from bonus.numba_gpu_trainer import NumbaGPUTrainer
+    except ModuleNotFoundError as import_error:
+        if import_error.name != "bonus":
+            raise
+        print(
+            "--bonus trainer is unavailable, using the standard CPU trainer.",
+            file=sys.stderr,
+        )
+        return None
+
+    try:
+        return NumbaGPUTrainer()
+    except RuntimeError as runtime_error:
+        cause = runtime_error.__cause__
+        details = f": {cause}" if cause is not None else ""
+        print(
+            f"--bonus trainer is unavailable ({runtime_error}{details}); "
+            "using the standard CPU trainer.",
+            file=sys.stderr,
+        )
+        return None
+
+
 def execute_train(args: Namespace) -> int:
     parser = FENParser()
     records = parser.parse_file(args.CHESSFILE)
@@ -94,7 +119,17 @@ def execute_train(args: Namespace) -> int:
         targets[0, class_index] = 1.0
         training_data.append(DataPair(inputs, targets))
 
-    network.train(training_data, num_epoch=_EPOCHS)
+    if args.bonus:
+        gpu_trainer = _create_numba_gpu_trainer()
+        if gpu_trainer is None:
+            network.train(training_data, num_epoch=_EPOCHS)
+        elif not gpu_trainer.supports_network(network):
+            raise ValueError("--bonus does not support this network.")
+        else:
+            print("Using the bonus GPU trainer.")
+            gpu_trainer.train(network, training_data, num_epoch=_EPOCHS)
+    else:
+        network.train(training_data, num_epoch=_EPOCHS)
     network.save(args.save or args.LOADFILE)
     return 0
 
@@ -114,7 +149,10 @@ def execute_predict(args: Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = _ArgumentParser(
         prog="./my_torch_analyzer",
-        usage="./my_torch_analyzer [--predict | --train [--save SAVEFILE]] LOADFILE CHESSFILE",
+        usage=(
+            "./my_torch_analyzer [--predict | --train [--bonus] "
+            "[--save SAVEFILE]] LOADFILE CHESSFILE"
+        ),
     )
 
     desc = parser.add_argument_group("DESCRIPTION")
@@ -132,11 +170,15 @@ def main(argv: list[str] | None = None) -> int:
 
     desc.add_argument("--save", metavar="SAVEFILE",
                       help="Save neural network into SAVEFILE. Only works in train mode.")
+    desc.add_argument("--bonus", action="store_true",
+                      help="Use the optional bonus GPU trainer. Only works with --train.")
     desc.add_argument("LOADFILE", help="File containing an artificial neural network")
     desc.add_argument("CHESSFILE", help="File containing chessboards")
     args = parser.parse_args(argv)
     if args.save and not args.train:
         parser.error("--save can only be used with --train")
+    if args.bonus and not args.train:
+        parser.error("--bonus can only be used with --train")
 
     try:
         if args.train:
