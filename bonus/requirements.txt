@@ -1,0 +1,5 @@
+numpy<2.4
+numba-cuda>=0.4.0
+nvidia-cuda-runtime-cu12>=12.9,<13
+nvidia-cuda-nvrtc-cu12>=12.9,<13
+nvidia-cuda-nvcc-cu12>=12.9,<13
