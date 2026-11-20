@@ -91,7 +91,7 @@ class NeuralNetwork:
         if learning_rate is None:
             learning_rate = self.lr_scheduler.get_learning_rate()
         activations = self._keep_all_forward(inputs)
-        delta = activations[-1] - targets
+        delta = self._settings.loss_derivative(activations[-1], targets)
         current_loss = self.compute_loss(activations[-1], targets)
         self.last_loss = current_loss
         self.loss_history.append(current_loss)

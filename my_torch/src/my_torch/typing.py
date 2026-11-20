@@ -5,7 +5,7 @@ import numpy as np
 
 __all__ = ["weight", "layer", "bias", "biases", "bias_function",
            "weight_function", "activation_function",
-           "loss_function", "loss_derivative", "train_data", "DataPair"]
+           "loss_function", "loss_derivative", "loss_function_class", "train_data", "DataPair"]
 
 type _1d = tuple[int]
 type _2d = tuple[int, int]
@@ -23,6 +23,7 @@ type activation_function = type["ActivationFunction"]
 
 type loss_function = Callable[[layer, layer], float]
 type loss_derivative = Callable[[layer, layer], layer]
+type loss_function_class = type["LossFunction"]
 
 
 @dataclass
